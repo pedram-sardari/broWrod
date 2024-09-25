@@ -43,3 +43,8 @@ async def login(
         settings.ACCESS_TOKEN_FIELD_NAME: create_access_token(sub=user.id),
         "token_type": settings.BEARER_STR,
     }
+
+
+@router.get("/me", description="Get logged in user info", response_model=user_schemas.UserRead)
+async def me(current_user: user_schemas.UserRead = Depends(deps.get_current_user)):
+    return current_user
