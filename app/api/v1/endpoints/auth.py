@@ -1,8 +1,13 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorClient
 
 import crud
 from api import deps
+from core.auth import authenticate, create_access_token
+from core.config import settings
 from schemas import user as user_schemas
 
 router = APIRouter()
@@ -23,3 +28,18 @@ async def register(
     user_in_db = await crud.user.create_user(db_cli=db_cli,
                                              obj_in=user_schemas.UserInDB(**user_in.model_dump()))
     return user_in_db
+
+
+@router.post("/login")
+async def login(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db_cli: AsyncIOMotorClient = Depends(deps.get_db_cli)
+) -> Any:
+    user = await authenticate(email=form_data.username, password=form_data.password, db_cli=db_cli)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    return {
+        settings.ACCESS_TOKEN_FIELD_NAME: create_access_token(sub=user.id),
+        "token_type": settings.BEARER_STR,
+    }
