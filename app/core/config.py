@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_NAME: str = PROJECT_NAME
     USER_COLLECTION_NAME: str = "users"
+    TASK_COLLECTION_NAME: str = "tasks"
     WORD_COLLECTION_NAME: str = "words"
     ID_FIELD_NAME: str = "id"
 
